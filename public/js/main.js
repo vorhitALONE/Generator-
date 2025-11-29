@@ -1,7 +1,7 @@
 // main.js — логика для index.html
 let activeNumber = null;
 let historyData = [];
-
+fetch("https://vorhitalone-generatornumbers-46cd.twc1.net/api/active")
 async function fetchActiveNumber() {
   try {
     const response = await fetch('/api/active');
