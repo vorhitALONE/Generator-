@@ -1,5 +1,5 @@
 // admin.js — логика для admin.html
-
+fetch("https://vorhitalone-generatornumbers-46cd.twc1.net/api/active")
 async function api(path, opts = {}) {
   const res = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin' }, opts));
   return res;
