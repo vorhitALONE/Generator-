@@ -1,6 +1,14 @@
 // main.js — логика для index.html
 let activeNumber = null;
 let historyData = [];
+// пример API запроса
+const API_URL = 'http://90.156.227.225:5000'; 
+// или по домену
+// const API_URL = 'http://vorhitalone-generatornumbers-46cd.twc1.net';
+
+fetch(`${API_URL}/api/endpoint`)
+  .then(res => res.json())
+  .then(data => console.log(data));
 fetch("https://vorhitalone-generatornumbers-46cd.twc1.net/api/active")
 async function fetchActiveNumber() {
   try {
