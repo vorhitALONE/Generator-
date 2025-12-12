@@ -2,6 +2,7 @@
 let activeNumber = null;
 let historyData = [];
 const API_URL = 'https://vorhitalone-generatornumbers-46cd.twc1.net';
+fetch("https://vorhitalone-generatornumbers-46cd.twc1.net/api/generate")
 
 // Пример запроса
 export const getData = async () => {
