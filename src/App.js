@@ -124,33 +124,35 @@ function App() {
     }
   };
 
-  const handleSetActive = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+const handleSetActive = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
-    try {
-      const response = await fetch(`${API_URL}/api/admin/active`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ value: parseInt(newValue) })
-      });
+  try {
+    const response = await fetch(`${API_URL}/api/admin/active`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ value: parseInt(newValue) })
+    });
 
-      if (!response.ok) {
-        throw new Error('Не удалось установить значение');
-      }
-
-      const data = await response.json();
-      setActiveValue(data.value);
-      setNewValue('');
-      fetchHistory();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Не удалось установить значение');
     }
-  };
+
+    setActiveValue(data.value);
+    setNewValue('');
+    fetchHistory();
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="App">
@@ -280,3 +282,4 @@ function App() {
 }
 
 export default App;
+
