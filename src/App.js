@@ -1,26 +1,282 @@
-import React from 'react';
-// URL бэкенда
-const API_URL = 'https://vorhitalone-generatornumbers-46cd.twc1.net';
+import React, { useState, useEffect } from 'react';
+import './App.css';
 
-// Пример запроса
-export const getData = async () => {
-  try {
-    const response = await fetch(`${API_URL}/api/data`); // замени на свой endpoint
-    if (!response.ok) throw new Error('Ошибка сети');
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Ошибка запроса к бэкенду:', error);
-  }
-};
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
 function App() {
+  const [activeValue, setActiveValue] = useState(null);
+  const [generatedValue, setGeneratedValue] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Admin state
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminUsername, setAdminUsername] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [newValue, setNewValue] = useState('');
+
+  // Загрузка данных при старте
+  useEffect(() => {
+    fetchActiveValue();
+    fetchHistory();
+    checkAdminSession();
+  }, []);
+
+  const checkAdminSession = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/admin/check`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      setIsAdmin(data.authenticated);
+    } catch (err) {
+      console.error('Error checking admin session:', err);
+    }
+  };
+
+  const fetchActiveValue = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/active`);
+      const data = await response.json();
+      setActiveValue(data.value);
+    } catch (err) {
+      console.error('Error fetching active value:', err);
+      setError('Ошибка загрузки данных');
+    }
+  };
+
+  const fetchHistory = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/history`);
+      const data = await response.json();
+      setHistory(data);
+    } catch (err) {
+      console.error('Error fetching history:', err);
+    }
+  };
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`${API_URL}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Не удалось сгенерировать число');
+      }
+      
+      const data = await response.json();
+      setGeneratedValue(data.value);
+      fetchHistory();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_URL}/api/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          username: adminUsername, 
+          password: adminPassword 
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Неверные учетные данные');
+      }
+
+      setIsAdmin(true);
+      setShowAdminLogin(false);
+      setAdminUsername('');
+      setAdminPassword('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdminLogout = async () => {
+    try {
+      await fetch(`${API_URL}/api/admin/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      setIsAdmin(false);
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+  };
+
+  const handleSetActive = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_URL}/api/admin/active`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ value: parseInt(newValue) })
+      });
+
+      if (!response.ok) {
+        throw new Error('Не удалось установить значение');
+      }
+
+      const data = await response.json();
+      setActiveValue(data.value);
+      setNewValue('');
+      fetchHistory();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div>
-      <h1>Hello, React!</h1>
+    <div className="App">
+      <div className="container">
+        <header className="header">
+          <h1>🎲 Генератор Чисел</h1>
+          <p className="subtitle">Простой и надежный генератор случайных чисел</p>
+        </header>
+
+        {error && (
+          <div className="alert alert-error">
+            ❌ {error}
+          </div>
+        )}
+
+        {/* Основной блок генератора */}
+        <div className="main-card">
+          <div className="current-value">
+            <h2>Текущее значение:</h2>
+            <div className="value-display">
+              {activeValue !== null ? activeValue : '—'}
+            </div>
+          </div>
+
+          <button 
+            className="generate-btn"
+            onClick={handleGenerate}
+            disabled={loading || activeValue === null}
+          >
+            {loading ? 'Генерация...' : '🎯 Сгенерировать'}
+          </button>
+
+          {generatedValue !== null && (
+            <div className="generated-result">
+              <h3>Сгенерировано:</h3>
+              <div className="generated-value">{generatedValue}</div>
+            </div>
+          )}
+        </div>
+
+        {/* Панель администратора */}
+        <div className="admin-section">
+          {!isAdmin ? (
+            <div>
+              <button 
+                className="admin-toggle-btn"
+                onClick={() => setShowAdminLogin(!showAdminLogin)}
+              >
+                🔐 Вход для администратора
+              </button>
+
+              {showAdminLogin && (
+                <form className="admin-login-form" onSubmit={handleAdminLogin}>
+                  <h3>Вход в панель администратора</h3>
+                  <input
+                    type="text"
+                    placeholder="Логин"
+                    value={adminUsername}
+                    onChange={(e) => setAdminUsername(e.target.value)}
+                    required
+                  />
+                  <input
+                    type="password"
+                    placeholder="Пароль"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    required
+                  />
+                  <button type="submit" disabled={loading}>
+                    {loading ? 'Вход...' : 'Войти'}
+                  </button>
+                </form>
+              )}
+            </div>
+          ) : (
+            <div className="admin-panel">
+              <div className="admin-header">
+                <h3>⚙️ Панель администратора</h3>
+                <button className="logout-btn" onClick={handleAdminLogout}>
+                  Выйти
+                </button>
+              </div>
+
+              <form className="admin-form" onSubmit={handleSetActive}>
+                <label>Установить новое значение:</label>
+                <div className="input-group">
+                  <input
+                    type="number"
+                    placeholder="Введите число"
+                    value={newValue}
+                    onChange={(e) => setNewValue(e.target.value)}
+                    required
+                  />
+                  <button type="submit" disabled={loading}>
+                    {loading ? 'Сохранение...' : 'Сохранить'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
+
+        {/* История */}
+        <div className="history-section">
+          <h3>📜 История генераций</h3>
+          <div className="history-list">
+            {history.length > 0 ? (
+              history.map((item, index) => (
+                <div key={index} className="history-item">
+                  <span className="history-value">{item.value}</span>
+                  <span className="history-actor">
+                    {item.actor === 'admin' ? '👨‍💼 Админ' : '👤 Пользователь'}
+                  </span>
+                  <span className="history-time">
+                    {new Date(item.timestamp).toLocaleString('ru-RU')}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="no-history">История пуста</p>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
-
 
 export default App;
