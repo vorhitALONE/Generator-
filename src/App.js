@@ -16,23 +16,36 @@ function App() {
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [newValue, setNewValue] = useState('');
+  const [authToken, setAuthToken] = useState(localStorage.getItem('adminToken'));
 
   // Загрузка данных при старте
   useEffect(() => {
     fetchActiveValue();
     fetchHistory();
-    checkAdminSession();
+    if (authToken) {
+      checkAdminSession();
+    }
   }, []);
 
   const checkAdminSession = async () => {
     try {
       const response = await fetch(`${API_URL}/api/admin/check`, {
-        credentials: 'include'
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
       });
       const data = await response.json();
       setIsAdmin(data.authenticated);
+      
+      if (!data.authenticated) {
+        // Токен невалидный, удаляем
+        localStorage.removeItem('adminToken');
+        setAuthToken(null);
+      }
     } catch (err) {
       console.error('Error checking admin session:', err);
+      localStorage.removeItem('adminToken');
+      setAuthToken(null);
     }
   };
 
@@ -90,21 +103,27 @@ function App() {
       const response = await fetch(`${API_URL}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ 
           username: adminUsername, 
           password: adminPassword 
         })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Неверные учетные данные');
+        throw new Error(data.error || 'Неверные учетные данные');
       }
 
+      // Сохраняем токен
+      localStorage.setItem('adminToken', data.token);
+      setAuthToken(data.token);
       setIsAdmin(true);
       setShowAdminLogin(false);
       setAdminUsername('');
       setAdminPassword('');
+      
+      console.log('✅ Logged in successfully');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -116,43 +135,56 @@ function App() {
     try {
       await fetch(`${API_URL}/api/admin/logout`, {
         method: 'POST',
-        credentials: 'include'
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
       });
-      setIsAdmin(false);
     } catch (err) {
       console.error('Logout error:', err);
+    } finally {
+      // Всегда удаляем токен локально
+      localStorage.removeItem('adminToken');
+      setAuthToken(null);
+      setIsAdmin(false);
     }
   };
 
-const handleSetActive = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError(null);
+  const handleSetActive = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-  try {
-    const response = await fetch(`${API_URL}/api/admin/active`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ value: parseInt(newValue) })
-    });
+    try {
+      const response = await fetch(`${API_URL}/api/admin/active`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ value: parseInt(newValue) })
+      });
 
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || 'Не удалось установить значение');
+      const data = await response.json();
+      
+      if (!response.ok) {
+        // Если 401, значит токен истёк
+        if (response.status === 401) {
+          localStorage.removeItem('adminToken');
+          setAuthToken(null);
+          setIsAdmin(false);
+        }
+        throw new Error(data.error || 'Не удалось установить значение');
+      }
+
+      setActiveValue(data.value);
+      setNewValue('');
+      fetchHistory();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    setActiveValue(data.value);
-    setNewValue('');
-    fetchHistory();
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <div className="App">
@@ -282,4 +314,3 @@ const handleSetActive = async (e) => {
 }
 
 export default App;
-
