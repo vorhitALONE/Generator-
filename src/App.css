@@ -444,3 +444,48 @@
   width: 16px;
   height: 16px;
 }
+/* Textarea для серии чисел */
+.values-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: monospace;
+  resize: vertical;
+  margin-bottom: 15px;
+}
+
+.values-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.admin-hint {
+  font-size: 12px;
+  color: #666;
+  margin: 5px 0 10px 0;
+  font-style: italic;
+}
+
+.admin-form button[type="submit"] {
+  width: 100%;
+  padding: 12px 24px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.admin-form button[type="submit"]:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.admin-form button[type="submit"]:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
