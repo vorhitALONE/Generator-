@@ -15,7 +15,7 @@ function App() {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
-  const [newValue, setNewValue] = useState('');
+  const [newValues, setNewValues] = useState('');
   const [authToken, setAuthToken] = useState(localStorage.getItem('adminToken'));
 
   // Загрузка данных при старте
@@ -146,19 +146,31 @@ function App() {
     }
   };
 
-  const handleSetActive = async (e) => {
+  const handleSetValues = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
+      // Парсим введённые числа (разделённые пробелами, запятыми или новыми строками)
+      const values = newValues
+        .split(/[\s,;\n]+/)
+        .map(v => v.trim())
+        .filter(v => v !== '')
+        .map(v => parseInt(v))
+        .filter(v => !isNaN(v));
+
+      if (values.length === 0) {
+        throw new Error('Введите хотя бы одно корректное число');
+      }
+
       const response = await fetch(`${API_URL}/api/admin/active`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
-        body: JSON.stringify({ value: parseInt(newValue) })
+        body: JSON.stringify({ values: values })
       });
 
       const data = await response.json();
@@ -169,11 +181,11 @@ function App() {
           setAuthToken(null);
           setIsAdmin(false);
         }
-        throw new Error(data.error || 'Не удалось установить значение');
+        throw new Error(data.error || 'Не удалось установить значения');
       }
 
-      setActiveValue(data.value);
-      setNewValue('');
+      setActiveValue(data.nextValue);
+      setNewValues('');
       fetchHistory();
     } catch (err) {
       setError(err.message);
@@ -293,20 +305,24 @@ function App() {
                 </button>
               </div>
 
-              <form className="admin-form" onSubmit={handleSetActive}>
-                <label>Установить новое значение:</label>
+              <form className="admin-form" onSubmit={handleSetValues}>
+                <label>Установить серию чисел:</label>
+                <p className="admin-hint">
+                  Введите числа через пробел, запятую или с новой строки
+                </p>
                 <div className="input-group">
-                  <input
-                    type="number"
-                    placeholder="Введите число"
-                    value={newValue}
-                    onChange={(e) => setNewValue(e.target.value)}
+                  <textarea
+                    className="values-input"
+                    placeholder="Например: 5, 10, 15, 20 или по одному на строке"
+                    value={newValues}
+                    onChange={(e) => setNewValues(e.target.value)}
+                    rows="4"
                     required
                   />
-                  <button type="submit" disabled={loading}>
-                    {loading ? 'Сохранение...' : 'Сохранить'}
-                  </button>
                 </div>
+                <button type="submit" disabled={loading}>
+                  {loading ? 'Сохранение...' : 'Добавить серию'}
+                </button>
               </form>
             </div>
           )}
