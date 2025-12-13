@@ -213,52 +213,39 @@ function App() {
             {loading ? 'Генерация...' : '🎯 Сгенерировать'}
           </button>
 
-          {/* Дополнительные настройки (неактивные) */}
-          <div id="description" className="number">
-            новую последовательность из
-            <div id="slider" data-min="1" data-max="50" data-val="1" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
-              <div className="ui-slider-range ui-widget-header ui-corner-all ui-slider-range-min" style={{width: '0%'}}></div>
-              <span className="ui-slider-handle ui-state-default ui-corner-all" tabIndex="0" style={{left: '0%'}}></span>
-            </div>
-            <span id="slider-val" data-words="случайного числа,случайных чисел,случайных чисел">1 случайного числа</span>
+          {/* Дополнительные настройки */}
+          <div className="settings-section">
+            <p className="settings-title">новую последовательность из</p>
             
-            <div id="number-from">
-              <label className="sel">
-                <input type="radio" name="from" value="range" defaultChecked aria-label="из диапазона" />
+            <div className="slider-container">
+              <input type="range" min="1" max="50" defaultValue="1" className="slider" />
+              <span className="slider-value">1 случайного числа</span>
+            </div>
+
+            <div className="radio-group">
+              <label className="radio-label">
+                <input type="radio" name="from" value="range" defaultChecked />
                 <span>из диапазона</span>
-              </label> или{' '}
-              <label>
-                <input type="radio" name="from" value="list" aria-label="из списка" />
+              </label>
+              <span className="radio-separator">или</span>
+              <label className="radio-label">
+                <input type="radio" name="from" value="list" />
                 <span>из списка</span>
               </label>
-              <br />
-              <ul>
-                <li className="number-from-range sel">
-                  от <input id="number-start" type="text" maxLength="9" defaultValue="1" autoComplete="off" aria-label="от" />
-                  {' '}до <input id="number-end" type="text" maxLength="9" defaultValue="100" autoComplete="off" aria-label="до" />
-                </li>
-                <li className="number-from-list">
-                  <textarea id="number-list" maxLength="8388607" autoComplete="off" placeholder="укажите список целых чисел" aria-label="укажите список целых чисел"></textarea>
-                </li>
-              </ul>
             </div>
 
-            <div id="number-exclude">
+            <div className="range-inputs">
+              <span>от</span>
+              <input type="number" className="range-input" defaultValue="1" />
+              <span>до</span>
+              <input type="number" className="range-input" defaultValue="100" />
+            </div>
+
+            <div className="checkbox-option">
               <label>
-                <input type="checkbox" aria-label="исключить числа" /> исключить числа
+                <input type="checkbox" />
+                <span>исключить числа</span>
               </label>
-              <textarea id="number-exclude-list" maxLength="8388607" autoComplete="off" placeholder="укажите список целых чисел" aria-label="укажите список целых чисел"></textarea>
-            </div>
-
-            <div id="number-unique">
-              <label>
-                <input type="checkbox" aria-label="исключить повторения" /> исключить повторения
-              </label>
-            </div>
-
-            <div id="number-record">
-              <span>Записать видео генерации</span>
-              <i className="fa fa-question-circle" title="Разрешите доступ к вашему экрану что бы начать запись видео. По окончанию записи закройте доступ. Записанное видео будет сохранено на ваш компьютер автоматически."></i>
             </div>
           </div>
         </div>
