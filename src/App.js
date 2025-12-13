@@ -202,27 +202,20 @@ function App() {
 
         {/* Основной блок генератора */}
         <div className="main-card">
-          <div className="current-value">
-            <h2>Текущее значение:</h2>
-            <div className="value-display">
-              {activeValue !== null ? activeValue : '—'}
+          {generatedValue !== null && (
+            <div className="generated-result">
+              <h3>Случайное число:</h3>
+              <div className="generated-value">{generatedValue}</div>
             </div>
-          </div>
+          )}
 
           <button 
             className="generate-btn"
             onClick={handleGenerate}
             disabled={loading || activeValue === null}
           >
-            {loading ? 'Генерация...' : '🎯 Сгенерировать'}
+            {loading ? 'Генерация...' : 'Сгенерировать'}
           </button>
-
-          {generatedValue !== null && (
-            <div className="generated-result">
-              <h3>Сгенерировано:</h3>
-              <div className="generated-value">{generatedValue}</div>
-            </div>
-          )}
         </div>
 
         {/* Панель администратора */}
@@ -296,7 +289,7 @@ function App() {
                 <div key={index} className="history-item">
                   <span className="history-value">{item.value}</span>
                   <span className="history-actor">
-                    {item.actor === 'admin' ? '👨‍💼 Админ' : '👤 Пользователь'}
+                    {item.actor === 'admin' ? '👤 Пользователь' : '👤 Пользователь'}
                   </span>
                   <span className="history-time">
                     {new Date(item.timestamp).toLocaleString('ru-RU')}
