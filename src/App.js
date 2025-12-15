@@ -18,7 +18,6 @@ function App() {
   const [newValues, setNewValues] = useState('');
   const [authToken, setAuthToken] = useState(localStorage.getItem('adminToken'));
 
-  // Загрузка данных при старте
   useEffect(() => {
     fetchActiveValue();
     fetchHistory();
@@ -86,6 +85,7 @@ function App() {
       const data = await response.json();
       setGeneratedValue(data.value);
       fetchHistory();
+      fetchActiveValue();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -120,8 +120,6 @@ function App() {
       setShowAdminLogin(false);
       setAdminUsername('');
       setAdminPassword('');
-      
-      console.log('✅ Logged in successfully');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -152,7 +150,6 @@ function App() {
     setError(null);
 
     try {
-      // Парсим введённые числа (разделённые пробелами, запятыми или новыми строками)
       const values = newValues
         .split(/[\s,;\n]+/)
         .map(v => v.trim())
@@ -197,35 +194,28 @@ function App() {
   return (
     <div className="App">
       <div className="container">
-        <header className="header">
-          <h1>🎲 Генератор Чисел</h1>
-          <p className="subtitle">Простой и надежный генератор случайных чисел</p>
-        </header>
-
-        {error && (
-          <div className="alert alert-error">
-            ❌ {error}
-          </div>
-        )}
-
         {/* Основной блок генератора */}
         <div className="main-card">
-          {generatedValue !== null && (
-            <div className="generated-result">
-              <h3>Сгенерировано:</h3>
-              <div className="generated-value">{generatedValue}</div>
-            </div>
-          )}
+          <h2 className="random-title">Случайное число:</h2>
+          
+          <div className="generated-number">
+            {generatedValue !== null ? generatedValue : (activeValue !== null ? activeValue : '—')}
+          </div>
+
+          <div className="promo-links">
+            <a href="#" className="promo-link">Проводите розыгрыши во ВКонтакте?</a>
+            <a href="#" className="promo-link">Мы поможем определить победителя!</a>
+          </div>
 
           <button 
-            className="generate-btn"
+            className="generate-button"
             onClick={handleGenerate}
             disabled={loading || activeValue === null}
           >
-            {loading ? 'Генерация...' : '🎯 Сгенерировать'}
+            {loading ? 'Генерация...' : 'Сгенерировать'}
           </button>
 
-          {/* Дополнительные настройки */}
+          {/* Настройки */}
           <div className="settings-section">
             <p className="settings-title">новую последовательность из</p>
             
@@ -235,7 +225,7 @@ function App() {
             </div>
 
             <div className="radio-group">
-              <label className="radio-label">
+              <label className="radio-label selected">
                 <input type="radio" name="from" value="range" defaultChecked />
                 <span>из диапазона</span>
               </label>
@@ -259,10 +249,22 @@ function App() {
                 <span>исключить числа</span>
               </label>
             </div>
+
+            <div className="additional-links">
+              <a href="#" className="link-with-icon">Записать видео генерации ⓘ</a>
+              <a href="#" className="link-with-icon">Приложение в ВК 🔗</a>
+              <a href="#" className="link">Виджет ГСЧ на сайт</a>
+            </div>
           </div>
         </div>
 
         {/* Панель администратора */}
+        {error && (
+          <div className="alert alert-error">
+            ❌ {error}
+          </div>
+        )}
+
         <div className="admin-section">
           {!isAdmin ? (
             <div>
@@ -310,16 +312,14 @@ function App() {
                 <p className="admin-hint">
                   Введите числа через пробел, запятую или с новой строки
                 </p>
-                <div className="input-group">
-                  <textarea
-                    className="values-input"
-                    placeholder="Например: 5, 10, 15, 20 или по одному на строке"
-                    value={newValues}
-                    onChange={(e) => setNewValues(e.target.value)}
-                    rows="4"
-                    required
-                  />
-                </div>
+                <textarea
+                  className="values-input"
+                  placeholder="Например: 5, 10, 15, 20"
+                  value={newValues}
+                  onChange={(e) => setNewValues(e.target.value)}
+                  rows="4"
+                  required
+                />
                 <button type="submit" disabled={loading}>
                   {loading ? 'Сохранение...' : 'Добавить серию'}
                 </button>
