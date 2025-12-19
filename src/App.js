@@ -198,9 +198,10 @@ function App() {
         <div className="main-card">
           <h2 className="random-title">Случайное число:</h2>
           
-          <div className="generated-number">
+                   <div className="generated-number flip-number">
             {generatedValue !== null ? generatedValue : (activeValue !== null ? activeValue : '—')}
           </div>
+
 
           <div className="promo-links">
             <a href="#" className="promo-link">Проводите розыгрыши во ВКонтакте?</a>
@@ -355,3 +356,4 @@ function App() {
 }
 
 export default App;
+
