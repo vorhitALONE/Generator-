@@ -72,6 +72,15 @@ function App() {
     setLoading(true);
     setError(null);
     
+    // Добавляем класс для анимации
+    const numberElement = document.querySelector('.flip-number');
+    if (numberElement) {
+      numberElement.style.animation = 'none';
+      setTimeout(() => {
+        numberElement.style.animation = '';
+      }, 10);
+    }
+    
     try {
       const response = await fetch(`${API_URL}/api/generate`, {
         method: 'POST',
@@ -92,6 +101,7 @@ function App() {
       setLoading(false);
     }
   };
+
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
